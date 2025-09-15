@@ -12,6 +12,7 @@ model User {
   name                String
   email               String           @unique
   about               String?
+  country             String?  
   industryType        String
   role                String
   workspaces          WorkspaceMember[]  
