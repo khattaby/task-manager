@@ -30,7 +30,7 @@ export const createNewWorkspace = async (data: CreateWorkspaceDataType) => {
         },
       },
     });
-    return { data: res };
+    return res;
   } catch (error) {
     console.log(error);
     return {

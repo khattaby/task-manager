@@ -12,11 +12,19 @@ export const userSchema = z.object({
   image: z.string().optional(),
 });
 
-
 export const workspaceSchema = z.object({
   name: z
     .string()
     .min(1, "Name is required")
     .max(100, "Maximum is 100 characters"),
   description: z.string().optional(),
+});
+
+export const projectSchema = z.object({
+  name: z
+    .string()
+    .min(3, { message: "Workspace name must be at least 3 characters." }),
+  workspaceId: z.string(),
+  description: z.string().optional(),
+  memberAccess: z.array(z.string()).optional(),
 });

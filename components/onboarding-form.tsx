@@ -34,6 +34,7 @@ import { industryTypesList, roleList } from "@/utils";
 import { Textarea } from "./ui/textarea";
 import { toast } from "sonner";
 import { createUser } from "@/app/actions/user";
+import { useRouter } from "next/navigation";
 
 interface Props {
   name: string;
@@ -45,6 +46,7 @@ export type UserDataType = z.infer<typeof userSchema>;
 
 const OnboardingForm = ({ name, email, image }: Props) => {
   const [pending, setPending] = useState(false);
+  const router = useRouter();
 
   const form = useForm<UserDataType>({
     resolver: zodResolver(userSchema),
@@ -62,10 +64,24 @@ const OnboardingForm = ({ name, email, image }: Props) => {
   const onSubmit = async (data: UserDataType) => {
     try {
       setPending(true);
-      await createUser(data);
+      const result = await createUser(data);
+      
+      if (result.success) {
+        toast.success("Onboarding completed successfully!");
+        // Add a small delay to ensure database transaction is committed
+        setTimeout(() => {
+          if (result.redirectTo) {
+            router.push(result.redirectTo);
+          }
+        }, 500);
+      } else {
+        toast.error(result.error || "Something went wrong");
+      }
     } catch (error) {
       console.log(error);
-      toast.error("Something went wrong");
+      toast.error("Network error. Please check your connection and try again.");
+    } finally {
+      setPending(false);
     }
   };
 
