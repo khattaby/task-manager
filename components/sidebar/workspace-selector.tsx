@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { WorkspaceAvatar } from "../workspace/workspace-avatar";
 import { Check, ChevronsUpDown } from "lucide-react";
+
 export const WorkspaceSelector = ({
   workspaces,
 }: {
@@ -25,11 +26,16 @@ export const WorkspaceSelector = ({
   const [selectedWorkspace, setSelectedWorkspace] = useState<
     WorkspaceProps | undefined
   >(undefined);
+  const [isClient, setIsClient] = useState(false);
+
   const onSelect = (id: string) => {
     setSelectedWorkspace(workspaces.find((workspace) => workspace.id === id));
-
     router.push(`/workspace/${id}`);
   };
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     if (workspaceId && workspaces) {
@@ -38,6 +44,19 @@ export const WorkspaceSelector = ({
       );
     }
   }, [workspaceId, workspaces]);
+
+  if (!isClient) {
+    return (
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton size="lg">
+            <div className="size-6 2xl:size-8 rounded-md bg-gray-200 animate-pulse" />
+            <div className="font-semibold">Loading...</div>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    );
+  }
 
   return (
     <>

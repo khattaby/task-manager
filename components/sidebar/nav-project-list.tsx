@@ -10,6 +10,7 @@ import {
   useSidebar,
 } from "../ui/sidebar";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import CreateWorkspaceForm from "../workspace/create-workspace-form";
 import { CreateProjectForm } from "../project/create-project-form";
 
@@ -21,7 +22,12 @@ export const NavProjects = ({
   workspaceMembers: workspaceMembersProps[];
 }) => {
   const { isMobile, setOpenMobile } = useSidebar();
-  const pathname = usePathname;
+  const pathname = usePathname();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   return (
     <>
@@ -35,15 +41,15 @@ export const NavProjects = ({
         </SidebarGroupLabel>
         <SidebarMenu>
           {projects?.map((proj) => {
-            const href = `/workspace/${proj.workspaceId}/projects/${proj.id}}`;
+            const href = `/workspace/${proj.workspaceId}/projects/${proj.id}`;
             return (
               <SidebarMenuItem key={proj.id}>
                 <SidebarMenuButton>
                   <a
                     href={href}
                     className={
-                      pathname() === href
-                        ? "text-primary-foreground font-semibold"
+                      isClient && pathname === href
+                        ? "text-blue-500 font-semibold"
                         : "text-muted-foreground "
                     }
                   >

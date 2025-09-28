@@ -1,3 +1,5 @@
+import { TaskStatus } from "@prisma/client";
+
 export const roleList = [
   "Developer",
   "Designer",
@@ -25,7 +27,7 @@ export const roleList = [
   "Freelancer",
   "Student",
   "Intern",
-  "Other"
+  "Other",
 ];
 
 export const industryTypesList = [
@@ -72,5 +74,28 @@ export const industryTypesList = [
   "Fashion",
   "Beauty",
   "Fitness",
-  "Other"
+  "Other",
+];
+
+export const taskStats = [
+  {
+    status: TaskStatus.TODO,
+    label: "To Do",
+    color: "bg-yellow-500",
+  },
+  {
+    status: TaskStatus.IN_PROGRESS,
+    label: "In Progress",
+    color: "bg-blue-500",
+  },
+  {
+    status: TaskStatus.IN_REVIEW,
+    label: "In Review",
+    color: "bg-purple-500",
+  },
+  {
+    status: TaskStatus.COMPLETED,
+    label: "Completed",
+    color: "bg-green-500",
+  },
 ];
