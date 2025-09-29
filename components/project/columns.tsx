@@ -119,7 +119,7 @@ export const columns: ColumnDef<TaskTableItem>[] = [
             return "secondary";
         }
       };
-      
+
       const getStatusLabel = (status: string) => {
         switch (status.toLowerCase()) {
           case "todo":
@@ -137,7 +137,7 @@ export const columns: ColumnDef<TaskTableItem>[] = [
 
       return (
         <Badge variant={status as any}>
-          {status==="IN_PROGRESS"?"In Progress":status}
+          {status === "IN_PROGRESS" ? "In Progress" : status}
         </Badge>
       );
     },
@@ -168,7 +168,7 @@ export const columns: ColumnDef<TaskTableItem>[] = [
             return "secondary";
         }
       };
-      
+
       const getPriorityLabel = (priority: string) => {
         switch (priority.toLowerCase()) {
           case "low":
@@ -230,9 +230,13 @@ export const columns: ColumnDef<TaskTableItem>[] = [
       const due = new Date(dueDate);
       const isOverdue = due < today;
       const isToday = due.toDateString() === today.toDateString();
-      
+
       return (
-        <div className={`text-sm ${isOverdue ? 'text-red-600' : isToday ? 'text-orange-600' : ''}`}>
+        <div
+          className={`text-sm ${
+            isOverdue ? "text-red-600" : isToday ? "text-orange-600" : ""
+          }`}
+        >
           {due.toLocaleDateString("en-US", {
             year: "numeric",
             month: "short",
@@ -256,7 +260,7 @@ export const columns: ColumnDef<TaskTableItem>[] = [
     ),
     cell: ({ row }) => {
       const assignedTo = row.getValue("assignedTo") as any;
-      
+
       if (!assignedTo) {
         return (
           <div className="flex items-center gap-2">
@@ -286,7 +290,9 @@ export const columns: ColumnDef<TaskTableItem>[] = [
           </Avatar>
           <div className="flex flex-col">
             <span className="text-sm font-medium">{assignedTo.name}</span>
-            <span className="text-xs text-muted-foreground">{assignedTo.email}</span>
+            <span className="text-xs text-muted-foreground">
+              {assignedTo.email}
+            </span>
           </div>
         </div>
       );
@@ -304,12 +310,14 @@ export const columns: ColumnDef<TaskTableItem>[] = [
     ),
     cell: ({ row }) => {
       const attachments = row.getValue("attachments") as any[];
-      
+
       if (!attachments || attachments.length === 0) {
         return (
           <div className="flex items-center gap-2">
             <Paperclip className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">No attachments</span>
+            <span className="text-sm text-muted-foreground">
+              No attachments
+            </span>
           </div>
         );
       }
@@ -318,7 +326,7 @@ export const columns: ColumnDef<TaskTableItem>[] = [
         <div className="flex items-center gap-2">
           <Paperclip className="h-4 w-4" />
           <Badge variant="secondary">
-            {attachments.length} file{attachments.length !== 1 ? 's' : ''}
+            {attachments.length} file{attachments.length !== 1 ? "s" : ""}
           </Badge>
           {attachments.length > 0 && (
             <span className="text-xs text-muted-foreground">
@@ -357,11 +365,235 @@ export const columns: ColumnDef<TaskTableItem>[] = [
               Show Task
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem 
+            <DropdownMenuItem
               onClick={handleDelete}
               className="text-red-600 focus:text-red-600"
             >
               Delete task
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
+    },
+    enableSorting: false,
+    enableHiding: false,
+  },
+];
+
+export const myTaskColumns: ColumnDef<TaskTableItem>[] = [
+  {
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllRowsSelected() ||
+          (table.getIsSomeRowsSelected() && "indeterminate")
+        }
+        onCheckedChange={(value) => table.toggleAllRowsSelected(!value)}
+        aria-label="Select all"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
+  {
+    accessorKey: "title",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        My Task <ArrowUpDown />
+      </Button>
+    ),
+    cell: ({ row }) => {
+      const title = row.getValue("title");
+      return (
+        <Link
+          href={`/workspace/${row.original.Project.workspaceId}/projects/${row.original.Project.id}/${row.original.id}`}
+        >
+          <div className="flex items-center gap-2">
+            <ProjectAvatar name={title as string} />
+            <div className="flex flex-col">
+              <span className="text-sm font-medium xl:text-base capitalize">
+                {title as string}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {row.original.Project.name}
+              </span>
+            </div>
+          </div>
+        </Link>
+      );
+    },
+  },
+  {
+    accessorKey: "status",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Status <ArrowUpDown />
+      </Button>
+    ),
+    cell: ({ row }) => {
+      const status = row.getValue("status") as string;
+      return (
+        <Badge variant={status as any}>
+          {status === "IN_PROGRESS" ? "In Progress" : status}
+        </Badge>
+      );
+    },
+  },
+  {
+    accessorKey: "priority",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Priority <ArrowUpDown />
+      </Button>
+    ),
+    cell: ({ row }) => {
+      const priority = row.getValue("priority") as string;
+      const getPriorityVariant = (priority: string) => {
+        switch (priority.toLowerCase()) {
+          case "low":
+            return "secondary";
+          case "medium":
+            return "default";
+          case "high":
+            return "destructive";
+          case "critical":
+            return "destructive";
+          default:
+            return "secondary";
+        }
+      };
+
+      const getPriorityLabel = (priority: string) => {
+        switch (priority.toLowerCase()) {
+          case "low":
+            return "Low";
+          case "medium":
+            return "Medium";
+          case "high":
+            return "High";
+          case "critical":
+            return "Critical";
+          default:
+            return priority;
+        }
+      };
+
+      return (
+        <Badge variant={getPriorityVariant(priority) as any}>
+          {getPriorityLabel(priority)}
+        </Badge>
+      );
+    },
+  },
+  {
+    accessorKey: "dueDate",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Due Date <ArrowUpDown />
+      </Button>
+    ),
+    cell: ({ row }) => {
+      const dueDate = row.getValue("dueDate") as Date;
+      const today = new Date();
+      const due = new Date(dueDate);
+      const isOverdue = due < today;
+      const isToday = due.toDateString() === today.toDateString();
+
+      return (
+        <div
+          className={`text-sm ${
+            isOverdue ? "text-red-600" : isToday ? "text-orange-600" : ""
+          }`}
+        >
+          {due.toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+          })}
+          {isOverdue && <span className="ml-1 text-xs">(Overdue)</span>}
+          {isToday && <span className="ml-1 text-xs">(Today)</span>}
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "attachments",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Files <ArrowUpDown />
+      </Button>
+    ),
+    cell: ({ row }) => {
+      const attachments = row.getValue("attachments") as any[];
+
+      if (!attachments || attachments.length === 0) {
+        return (
+          <div className="flex items-center gap-2">
+            <Paperclip className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">None</span>
+          </div>
+        );
+      }
+
+      return (
+        <div className="flex items-center gap-2">
+          <Paperclip className="h-4 w-4" />
+          <Badge variant="secondary">
+            {attachments.length}
+          </Badge>
+        </div>
+      );
+    },
+  },
+  {
+    id: "actions",
+    header: "Actions",
+    cell: ({ row }) => {
+      const task = row.original;
+
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuItem asChild>
+              <Link
+                href={`/workspace/${task.Project.workspaceId}/projects/${task.Project.id}/${task.id}`}
+              >
+                View Task
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="text-red-600 focus:text-red-600">
+              Mark Complete
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
