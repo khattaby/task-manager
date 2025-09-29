@@ -5,6 +5,25 @@ import { Card } from "../ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 export const ProjectHeader = ({ project }: { project: ProjectProps }) => {
+  // Handle case when project is undefined or null
+  if (!project) {
+    return (
+      <div className="space-y-4">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-2">
+          <div className="flex gap-2">
+            <ProjectAvatar name="Project" />
+            <div>
+              <h1 className="text-xl 2xl:text-2xl font-bold">Loading...</h1>
+              <p className="text-sm text-muted-foreground">
+                Project details are loading...
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="space-y-4">

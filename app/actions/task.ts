@@ -4,7 +4,7 @@ import { TaskFormValues } from "@/components/task/create-task-dialog";
 import { userRequired } from "../data/user/is-authenticated";
 import { taskFormSchema } from "@/lib/schema";
 import { db } from "@/lib/db";
-import { revalidatePath } from "next/cache";
+import { TaskStatus } from "@prisma/client";
 
 export const createNewTask = async (
   data: TaskFormValues,
@@ -70,12 +70,32 @@ export const createNewTask = async (
       },
     });
 
-    // Revalidate the project page to update the task distribution chart
-    revalidatePath(`/workspace/${workspaceId}/projects/${projectId}`);
-
     return { success: true };
   } catch (error) {
     console.error("Error creating task:", error);
     return { success: false, error: "Failed to create task" };
+  }
+};
+
+export const updateTaskPosition = async (
+  taskId: string,
+  newPosition: number,
+  newStatus: TaskStatus
+) => {
+  await userRequired();
+
+  try {
+    return await db.task.update({
+      where: {
+        id: taskId,
+      },
+      data: {
+        position: newPosition,
+        status: newStatus,
+      },
+    });
+  } catch (error) {
+    console.error("Error updating task position:", error);
+    throw error;
   }
 };

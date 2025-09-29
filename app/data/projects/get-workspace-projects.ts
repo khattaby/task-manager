@@ -54,11 +54,4 @@ export const getWorkspaceProjectByWorkspaceId = async (workspaceId: string) => {
       message: "Internal server error",
     };
   }
-  return {
-    projects: [],
-    workspaceMembers: [],
-    success: false,
-    error: true,
-    message: "Internal server error",
-  };
 };

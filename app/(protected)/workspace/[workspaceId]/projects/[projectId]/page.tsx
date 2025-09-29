@@ -1,5 +1,8 @@
 import { getProjectDetails } from "@/app/data/projects/get-project-details";
 import { ProjectDashboard } from "@/components/project/project-dashboard";
+import { ProjectTableContainer } from "@/components/project/project-table-container";
+import { ProjectKanban } from "@/components/project/project.kanban";
+import { ProjectHeader } from "@/components/project/project-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CommentProps } from "@/utils/types";
 import Link from "next/link";
@@ -61,10 +64,15 @@ const ProjectPage = async (props: ProjectPageProps) => {
           />
         </TabsContent>
         <TabsContent value="table">
-          <div>Table View - Coming Soon</div>
+          <div>
+            <ProjectTableContainer projectId={projectId} />
+          </div>
         </TabsContent>
         <TabsContent value="kanban">
-          <div>Kanban View - Coming Soon</div>
+          <div className="flex flex-col gap-6 px-2 md:px-4 2xl:px-6 py-0">
+            <ProjectHeader project={project as any} />
+            <ProjectKanban initialTasks={tasks?.items} />
+          </div>
         </TabsContent>
       </Tabs>
     </div>

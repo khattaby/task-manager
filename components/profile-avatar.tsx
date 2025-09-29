@@ -26,7 +26,7 @@ export const ProfileAvatar = ({
     >
       <AvatarImage src={url || undefined} alt={name} />
       <AvatarFallback className="bg-blue-500 text-white rounded-md">
-        {name.substring(0, numOfChars).toLocaleUpperCase()}
+        {name ? name.substring(0, numOfChars).toLocaleUpperCase() : "?"}
       </AvatarFallback>
     </Avatar>
   );

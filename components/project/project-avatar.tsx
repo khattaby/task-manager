@@ -5,7 +5,7 @@ export const ProjectAvatar = ({
   name,
   className,
 }: {
-  name: string;
+  name?: string;
   className?: string;
 }) => {
   // Safety check to handle undefined or empty name
