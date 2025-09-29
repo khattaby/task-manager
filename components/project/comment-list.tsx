@@ -24,15 +24,14 @@ export const CommentList = ({ comments }: { comments: CommentProps[] }) => {
           <div className="flex-1">
             <div className="flex items-center gap-2">
               <p className="font-medium">{comment.user.name}</p>
-            </div>
-
-            <p className="text-sm">
               <span className="text-xs text-muted-foreground">
                 {formatDistanceToNow(new Date(comment.createdAt), {
                   addSuffix: true,
                 })}
               </span>
-            </p>
+            </div>
+
+            <p className="text-sm mt-1">{comment.content}</p>
           </div>
         </div>
       ))}

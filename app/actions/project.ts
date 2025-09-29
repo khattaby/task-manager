@@ -63,3 +63,44 @@ export const createNewProject = async (data: ProjectDataType) => {
 
   return { success: true };
 };
+
+export const postComment = async (
+  workspaceId: string,
+  projectId: string,
+  content: string
+) => {
+  const { user } = await userRequired();
+  const isMember = await db.workspaceMember.findUnique({
+    where: {
+      userId_workspaceId: {
+        userId: user?.id!,
+        workspaceId,
+      },
+    },
+  });
+
+  if (!isMember) {
+    throw new Error("User is not a member of the workspace");
+  }
+
+  const projectAccess = await db.projectAccess.findUnique({
+    where: {
+      workspaceMemberId_projectId: {
+        workspaceMemberId: isMember.id!,
+        projectId,
+      },
+    },
+  });
+
+  if (!projectAccess?.hasAccess) {
+    throw new Error("User does not have access to the project");
+  }
+
+  const comment = await db.comment.create({
+    data: {
+      content,
+      projectId,
+      userId: user?.id!,
+    },
+  });
+};

@@ -99,3 +99,72 @@ export const updateTaskPosition = async (
     throw error;
   }
 };
+export const updateTask = async (
+  taskId: string,
+  data: TaskFormValues,
+  projectId: string,
+  workspaceId: string
+) => {
+  try {
+    const { user } = await userRequired();
+    const validatedData = taskFormSchema.parse(data);
+
+    const isUserMember = await db.workspaceMember.findUnique({
+      where: {
+        userId_workspaceId: {
+          userId: user?.id as string,
+          workspaceId,
+        },
+      },
+    });
+
+    if (!isUserMember) {
+      return { success: false, error: "User is not a member of the workspace" };
+    }
+
+    const projectAccess = await db.projectAccess.findUnique({
+      where: {
+        workspaceMemberId_projectId: {
+          workspaceMemberId: isUserMember.id,
+          projectId,
+        },
+      },
+    });
+
+    if (!projectAccess?.hasAccess) {
+      return {
+        success: false,
+        error: "User does not have access to the project",
+      };
+    }
+
+    const task = await db.task.update({
+      where: {
+        id: taskId,
+      },
+      data: {
+        title: validatedData.title,
+        description: validatedData.description,
+        startDate: validatedData.startDate,
+        dueDate: validatedData.dueDate,
+        assigneeId: validatedData.assignees || null,
+        status: validatedData.status,
+        priority: validatedData.priority,
+      },
+    });
+
+    await db.activity.create({
+      data: {
+        type: "TASK_UPDATED",
+        description: `Updated task ${validatedData.title}`,
+        projectId: projectId,
+        userId: user?.id as string,
+      },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error creating task:", error);
+    return { success: false, error: "Failed to create task" };
+  }
+};
