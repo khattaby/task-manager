@@ -55,9 +55,17 @@ export const createNewTask = async (
         status: validatedData.status,
         priority: validatedData.priority,
         position,
+        attachments: validatedData.attachments ? {
+          create: validatedData.attachments.map((attachment) => ({
+            name: attachment.name,
+            url: attachment.url,
+            type: attachment.type,
+          }))
+        } : undefined,
       },
       include: {
         Project: true,
+        attachments: true,
       },
     });
 
@@ -151,7 +159,32 @@ export const updateTask = async (
         status: validatedData.status,
         priority: validatedData.priority,
       },
+      include: {
+        attachments: true,
+      },
     });
+
+    // Handle attachments separately
+    if (validatedData.attachments) {
+      // Delete existing attachments
+      await db.file.deleteMany({
+        where: {
+          taskId: taskId,
+        },
+      });
+
+      // Create new attachments
+      if (validatedData.attachments.length > 0) {
+        await db.file.createMany({
+          data: validatedData.attachments.map((attachment) => ({
+            name: attachment.name,
+            url: attachment.url,
+            type: attachment.type,
+            taskId: taskId,
+          })),
+        });
+      }
+    }
 
     await db.activity.create({
       data: {

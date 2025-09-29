@@ -42,6 +42,7 @@ import { Calendar } from "../ui/calendar";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { createNewTask } from "@/app/actions/task";
+import { FileUpload } from "../file-upload";
 
 interface Props {
   project: ProjectProps;
@@ -101,7 +102,7 @@ export const CreateTaskDialog = ({ project }: Props) => {
       <DialogTrigger asChild>
         <Button>Create Task</Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="overflow-y-scroll max-h[80vh]">
         <DialogHeader>
           <DialogTitle>Create Task</DialogTitle>
         </DialogHeader>
@@ -329,6 +330,23 @@ export const CreateTaskDialog = ({ project }: Props) => {
                       placeholder="Enter task description (optional)"
                       className="resize-none"
                       rows={3}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="attachments"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Attachments</FormLabel>
+                  <FormControl>
+                    <FileUpload
+                      value={field.value || []}
+                      onChange={field.onChange}
                     />
                   </FormControl>
                   <FormMessage />
