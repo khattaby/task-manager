@@ -15,7 +15,7 @@ interface PageProps {
 
 const TaskIdPage = async ({ params }: PageProps) => {
   await userRequired();
-  const { taskId, workspaceId, projectId } = params;
+  const { taskId, workspaceId, projectId } = await params;
 
   const { task, comment } = await getTaskById(taskId, workspaceId, projectId);
 
