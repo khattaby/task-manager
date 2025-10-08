@@ -125,6 +125,7 @@ export const getProjectDetails = async (
       activities: (project as any)?.activities || [],
       comments,
       totalWorkspaceMembers,
+      currentUserAccessLevel: isUserMember.accessLevel,
     };
   } catch (error) {
     return { success: false, error: "Failed to fetch project details" };

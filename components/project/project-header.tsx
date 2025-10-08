@@ -4,7 +4,7 @@ import { CreateTaskDialog } from "../task/create-task-dialog";
 import { Card } from "../ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
-export const ProjectHeader = ({ project }: { project: ProjectProps }) => {
+export const ProjectHeader = ({ project, currentUserAccessLevel }: { project: ProjectProps; currentUserAccessLevel?: string }) => {
   // Handle case when project is undefined or null
   if (!project) {
     return (
@@ -40,7 +40,9 @@ export const ProjectHeader = ({ project }: { project: ProjectProps }) => {
             </div>
           </div>
           <div className="flex justify-end mt-3 md:mt-0 gap-3">
-            <CreateTaskDialog project={project} />
+            {currentUserAccessLevel !== "VIEWER" && (
+              <CreateTaskDialog project={project} />
+            )}
           </div>
         </div>
         <Card className="p-4">

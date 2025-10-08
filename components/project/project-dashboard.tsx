@@ -19,6 +19,7 @@ interface ProjectDashboardProps {
   activities: Activity[];
   totalWorkspaceMembers: number;
   comments: CommentProps[];
+  currentUserAccessLevel?: string;
 }
 
 export const ProjectDashboard = ({
@@ -27,13 +28,14 @@ export const ProjectDashboard = ({
   activities,
   totalWorkspaceMembers,
   comments,
+  currentUserAccessLevel,
 }: ProjectDashboardProps) => {
   return (
     <>
       <div className="flex flex-col gap-6 px-2 md:px-4 2xl:px-6py-0">
-        <ProjectHeader project={project} />
+        <ProjectHeader project={project} currentUserAccessLevel={currentUserAccessLevel} />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <Card className="p-4">
             <CircleProgress
               title="Completed"
@@ -58,17 +60,9 @@ export const ProjectDashboard = ({
               variant="warning"
             />
           </Card>
-          <Card className="p-4">
-            <CircleProgress
-              title="Team Members"
-              value={totalWorkspaceMembers / totalWorkspaceMembers}
-              subTitle={`${totalWorkspaceMembers} members`}
-              variant="default"
-            />
-          </Card>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <TaskDistributionChart tasks={{ ...tasks, overdue: tasks.overDue }} />
 
           <Card className="p-4">

@@ -6,7 +6,7 @@ import { userSchema } from "@/lib/schema";
 import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
 
-export const createUser = async (data: UserDataType) => {
+export const createUser = async (data: UserDataType, redirectTo?: string) => {
   const maxRetries = 3;
   const retryDelay = 1000; // 1 second
 
@@ -72,6 +72,11 @@ export const createUser = async (data: UserDataType) => {
            )
          ]) as any;
 
+         // If there's a redirectTo parameter (invite link), use it
+         if (redirectTo) {
+           return { success: true, redirectTo: redirectTo };
+         }
+
          if (userWithWorkspaces?.workspaces?.length === 0) {
            return { success: true, redirectTo: "/create-workspace" };
          }
@@ -113,6 +118,11 @@ export const createUser = async (data: UserDataType) => {
        ]) as any;
 
        // TODO: send user welcome email
+
+       // If there's a redirectTo parameter (invite link), use it
+       if (redirectTo) {
+         return { success: true, redirectTo: redirectTo };
+       }
 
        if (userData?.workspaces?.length === 0) {
          // create default workspace

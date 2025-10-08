@@ -3,64 +3,47 @@
 import { ProjectProps, workspaceMembersProps } from "@/utils/types";
 import {
   SidebarGroup,
+  SidebarGroupContent,
   SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
 } from "../ui/sidebar";
-import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
-import CreateWorkspaceForm from "../workspace/create-workspace-form";
 import { CreateProjectForm } from "../project/create-project-form";
+import Link from "next/link";
+import { useParams } from "next/navigation";
 
 export const NavProjects = ({
   projects,
   workspaceMembers,
+  currentUserAccessLevel,
 }: {
   projects: ProjectProps[];
   workspaceMembers: workspaceMembersProps[];
+  currentUserAccessLevel?: string;
 }) => {
-  const { isMobile, setOpenMobile } = useSidebar();
-  const pathname = usePathname();
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
+  const { workspaceId } = useParams();
   return (
-    <>
-      <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-        <SidebarGroupLabel className="flex justify-between">
-          <span className="text-sm font-semibold text-muted-foreground uppercase">
-            Projects
-          </span>
-
+    <SidebarGroup>
+      <SidebarGroupLabel className="flex justify-between">
+        Projects
+        {currentUserAccessLevel !== "VIEWER" && (
           <CreateProjectForm workspaceMembers={workspaceMembers} />
-        </SidebarGroupLabel>
+        )}
+      </SidebarGroupLabel>
+      <SidebarGroupContent>
         <SidebarMenu>
-          {projects?.map((proj) => {
-            const href = `/workspace/${proj.workspaceId}/projects/${proj.id}`;
-            return (
-              <SidebarMenuItem key={proj.id}>
-                <SidebarMenuButton>
-                  <a
-                    href={href}
-                    className={
-                      isClient && pathname === href
-                        ? "text-blue-500 font-semibold"
-                        : "text-muted-foreground "
-                    }
-                  >
-                    {proj.name}
-                  </a>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            );
-          })}
+          {projects.map((project) => (
+            <SidebarMenuItem key={project.id}>
+              <SidebarMenuButton asChild>
+                <Link href={`/workspace/${workspaceId}/projects/${project.id}`}>
+                  {project.name}
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
         </SidebarMenu>
-      </SidebarGroup>
-    </>
+      </SidebarGroupContent>
+    </SidebarGroup>
   );
 };

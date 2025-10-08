@@ -39,7 +39,13 @@ interface DataProps extends Workspace {
     accessLevel: $Enums.AccessLevel;
   }[];
 }
-export const WorkspaceSettingsForm = ({ data }: { data: DataProps }) => {
+
+interface WorkspaceSettingsFormProps {
+  data: DataProps;
+  currentUserAccessLevel?: string;
+}
+
+export const WorkspaceSettingsForm = ({ data, currentUserAccessLevel }: WorkspaceSettingsFormProps) => {
   const router = useRouter();
   const [isLoading, setIsLoading] = React.useState(false);
   const [isPending, setIsPending] = React.useState(false);
@@ -253,63 +259,65 @@ const handleDeleteWorkspace = async () => {
         </CardContent>
       </Card>
 
-      {/* Danger Zone */}
-      <Card className="border-red-200 bg-red-50/50">
-        <CardHeader>
-          <CardTitle className="text-red-600 flex items-center gap-2">
-            <Trash2 className="h-5 w-5" />
-            Danger Zone
-          </CardTitle>
-          <CardDescription className="text-red-600/80">
-            Permanently delete this workspace and all its data. This action cannot be undone.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {!showDeleteConfirm ? (
-            <Button
-              type="button"
-              variant="destructive"
-              onClick={() => setShowDeleteConfirm(true)}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete Workspace
-            </Button>
-          ) : (
-            <div className="space-y-4">
-              <div className="p-4 bg-red-100 border border-red-200 rounded-md">
-                <p className="text-sm text-red-800 font-medium mb-2">
-                  Are you absolutely sure?
-                </p>
-                <p className="text-sm text-red-700">
-                  This will permanently delete the workspace "{data.name}" and all its projects, tasks, and data. 
-                  This action cannot be undone.
-                </p>
+      {/* Danger Zone - Only show for OWNER */}
+      {currentUserAccessLevel === "OWNER" && (
+        <Card className="border-red-200 bg-red-50/50">
+          <CardHeader>
+            <CardTitle className="text-red-600 flex items-center gap-2">
+              <Trash2 className="h-5 w-5" />
+              Danger Zone
+            </CardTitle>
+            <CardDescription className="text-red-600/80">
+              Permanently delete this workspace and all its data. This action cannot be undone.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {!showDeleteConfirm ? (
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={() => setShowDeleteConfirm(true)}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete Workspace
+              </Button>
+            ) : (
+              <div className="space-y-4">
+                <div className="p-4 bg-red-100 border border-red-200 rounded-md">
+                  <p className="text-sm text-red-800 font-medium mb-2">
+                    Are you absolutely sure?
+                  </p>
+                  <p className="text-sm text-red-700">
+                    This will permanently delete the workspace "{data.name}" and all its projects, tasks, and data. 
+                    This action cannot be undone.
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowDeleteConfirm(false)}
+                    disabled={isDeleting}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    onClick={handleDeleteWorkspace}
+                    disabled={isDeleting}
+                    className="bg-red-600 hover:bg-red-700"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    {isDeleting ? "Deleting..." : "Yes, Delete Workspace"}
+                  </Button>
+                </div>
               </div>
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setShowDeleteConfirm(false)}
-                  disabled={isDeleting}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="button"
-                  variant="destructive"
-                  onClick={handleDeleteWorkspace}
-                  disabled={isDeleting}
-                  className="bg-red-600 hover:bg-red-700"
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  {isDeleting ? "Deleting..." : "Yes, Delete Workspace"}
-                </Button>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

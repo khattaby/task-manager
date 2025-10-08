@@ -29,7 +29,7 @@ export const WorkspaceSelector = ({
   const [isClient, setIsClient] = useState(false);
 
   const onSelect = (id: string) => {
-    setSelectedWorkspace(workspaces.find((workspace) => workspace.id === id));
+    setSelectedWorkspace(workspaces.find((workspace) => workspace.workspaceId === id));
     router.push(`/workspace/${id}`);
   };
 
@@ -40,7 +40,7 @@ export const WorkspaceSelector = ({
   useEffect(() => {
     if (workspaceId && workspaces) {
       setSelectedWorkspace(
-        workspaces.find((workspace) => workspace.id === workspaceId)
+        workspaces.find((workspace) => workspace.workspaceId === workspaceId)
       );
     }
   }, [workspaceId, workspaces]);
@@ -87,7 +87,7 @@ export const WorkspaceSelector = ({
                   key={workspace.id}
                   onSelect={() => onSelect(workspace.workspaceId)}
                 >
-                  <div className="flex flex-row items-center">
+                  <div className="flex flex-row items-center gap-2">
                     <WorkspaceAvatar
                       name={workspace?.Workspace?.name as string}
                     />

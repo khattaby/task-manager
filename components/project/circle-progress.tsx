@@ -11,11 +11,11 @@ interface CircleProps {
 }
 
 const variantStyles = {
-  default: "bg-blue-100 text-blue-800",
-  success: "bg-green-100 text-green-800",
-  warning: "bg-yellow-100 text-yellow-800",
-  info: "bg-cyan-100 text-cyan-800",
-  inProgress: "bg-purple-100 text-purple-800",
+  default: "text-blue-800",
+  success: "text-green-800",
+  warning: "text-yellow-800",
+  info: "text-cyan-800",
+  inProgress: "text-purple-800",
 };
 
 export const CircleProgress = ({

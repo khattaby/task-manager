@@ -4,6 +4,7 @@ import { ProjectDataType } from "@/components/project/create-project-form";
 import { userRequired } from "../data/user/is-authenticated";
 import { db } from "@/lib/db";
 import { projectSchema } from "@/lib/schema";
+import { canModifyContent } from "@/utils/access-control";
 
 export const createNewProject = async (data: ProjectDataType) => {
   const { user } = await userRequired();
@@ -30,6 +31,12 @@ export const createNewProject = async (data: ProjectDataType) => {
 
   if (!isUserMember) {
     throw new Error("User is not a member of the workspace");
+  }
+
+  // Check if user can modify content (MEMBER or OWNER only)
+  const canModify = await canModifyContent(user?.id as string, data.workspaceId as string);
+  if (!canModify) {
+    throw new Error("Only members and owners can create projects");
   }
 
   if (!validatedData.memberAccess?.length) {
@@ -67,7 +74,8 @@ export const createNewProject = async (data: ProjectDataType) => {
 export const postComment = async (
   workspaceId: string,
   projectId: string,
-  content: string
+  content: string,
+  taskId?: string
 ) => {
   const { user } = await userRequired();
   const isMember = await db.workspaceMember.findUnique({
@@ -81,6 +89,12 @@ export const postComment = async (
 
   if (!isMember) {
     throw new Error("User is not a member of the workspace");
+  }
+
+  // Check if user can modify content (MEMBER or OWNER only)
+  const canModify = await canModifyContent(user?.id as string, workspaceId);
+  if (!canModify) {
+    throw new Error("Only members and owners can post comments");
   }
 
   const projectAccess = await db.projectAccess.findUnique({
@@ -100,6 +114,7 @@ export const postComment = async (
     data: {
       content,
       projectId,
+      taskId,
       userId: user?.id!,
     },
   });

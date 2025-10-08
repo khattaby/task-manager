@@ -3,14 +3,16 @@ import { ProjectTable } from "@/app/data/projects/project-table";
 
 export const ProjectTableContainer = async ({
   projectId,
+  currentUserAccessLevel,
 }: {
   projectId: string;
+  currentUserAccessLevel?: string;
 }) => {
   const { tasks } = await getProjectById(projectId);
 
   return (
     <div className="p-0">
-      <ProjectTable tasks={tasks as any} />
+      <ProjectTable tasks={tasks as any} currentUserAccessLevel={currentUserAccessLevel} />
     </div>
   );
 };

@@ -1,7 +1,7 @@
 "use client";
 
 import { DataTable } from "@/components/data-table";
-import { columns } from "@/components/project/columns";
+import { columns, getColumns } from "@/components/project/columns";
 import { File, Project, Task, User } from "@prisma/client";
 
 export interface TaskProps extends Omit<Task, "projectId"> {
@@ -10,8 +10,15 @@ export interface TaskProps extends Omit<Task, "projectId"> {
   attachedTo?: File[];
 }
 
-export const ProjectTable = ({ tasks }: { tasks: TaskProps[] }) => {
-  return <DataTable columns={columns} data={tasks as any} />;
+export const ProjectTable = ({ 
+  tasks, 
+  currentUserAccessLevel 
+}: { 
+  tasks: TaskProps[];
+  currentUserAccessLevel?: string;
+}) => {
+  const tableColumns = getColumns(currentUserAccessLevel);
+  return <DataTable columns={tableColumns} data={tasks as any} />;
 };
 
 export const MyTasksTable = ({ tasks }: { tasks: TaskProps[] }) => {

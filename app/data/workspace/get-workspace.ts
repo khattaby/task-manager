@@ -31,5 +31,8 @@ export const getWorkspaceById = async (workspaceId: string) => {
     },
   });
 
-  return {data:workspace};
+  return {
+    data: workspace,
+    currentUserAccessLevel: isUserMember.accessLevel
+  };
 };

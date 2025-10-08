@@ -17,7 +17,7 @@ const TaskIdPage = async ({ params }: PageProps) => {
   await userRequired();
   const { taskId, workspaceId, projectId } = await params;
 
-  const { task, comment } = await getTaskById(taskId, workspaceId, projectId);
+  const { task, comment, currentUserAccessLevel } = await getTaskById(taskId, workspaceId, projectId);
 
   if (!task) {
     redirect("/not-found");
@@ -25,10 +25,14 @@ const TaskIdPage = async ({ params }: PageProps) => {
   return (
     <div className="flex flex-col lg:flex-row gap-6 vmd:px-6 pb-6">
       <div className="flex-1">
-        <TaskDetails task={task as any} />
+        <TaskDetails task={task as any} currentUserAccessLevel={currentUserAccessLevel} />
       </div>
       <div className="w-full lg:w-[400px]">
-        <TaskComment taskId={taskId} comments={comment as any} />
+        <TaskComment 
+          taskId={task.id} 
+          comments={comment} 
+          currentUserAccessLevel={currentUserAccessLevel}
+        />
       </div>
     </div>
   );

@@ -15,9 +15,10 @@ interface TaskDetailsProps {
     project: ProjectProps | null;
     attachments: File[];
   };
+  currentUserAccessLevel?: string;
 }
 
-export const TaskDetails = ({ task }: TaskDetailsProps) => {
+export const TaskDetails = ({ task, currentUserAccessLevel }: TaskDetailsProps) => {
   return (
     <Card className="w-full">
       <CardHeader className="flex flex-col md:flex-row justify-between gap-4 md:gap-0">
@@ -33,11 +34,13 @@ export const TaskDetails = ({ task }: TaskDetailsProps) => {
         </div>
 
         <div className="w-full md:w-auto flex flex-col justify-end gap-2">
-          <EditTaskDialog
-            key={new Date().getTime()}
-            task={task as any}
-            project={task.project as ProjectProps}
-          />
+          {currentUserAccessLevel !== "VIEWER" && (
+            <EditTaskDialog
+              key={new Date().getTime()}
+              task={task as any}
+              project={task.project as ProjectProps}
+            />
+          )}
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">Assigned To</span>
             <ProfileAvatar

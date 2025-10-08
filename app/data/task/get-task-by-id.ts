@@ -22,17 +22,20 @@ export const getTaskById = async (
     throw new Error("User is not a member of the workspace");
   }
 
-  const projectAccess = await db.projectAccess.findUnique({
-    where: {
-      workspaceMemberId_projectId: {
-        workspaceMemberId: isUserMember.id,
-        projectId,
+  // Check if user is workspace owner (owners have access to all projects)
+  if (isUserMember.accessLevel !== "OWNER") {
+    const projectAccess = await db.projectAccess.findUnique({
+      where: {
+        workspaceMemberId_projectId: {
+          workspaceMemberId: isUserMember.id,
+          projectId,
+        },
       },
-    },
-  });
-  
-  if (!projectAccess) {
-    throw new Error("User does not have access to the project");
+    });
+    
+    if (!projectAccess) {
+      throw new Error("User does not have access to the project");
+    }
   }
 
   const [task, comment] = await Promise.all([
@@ -79,14 +82,22 @@ export const getTaskById = async (
     }),
     db.comment.findMany({
       where: {
-        projectId,
+        taskId,
       },
       include: {
         user: {
           select: {
             id: true,
             name: true,
+            about: true,
+            country: true,
+            industryType: true,
+            email: true,
+            role: true,
             image: true,
+            createdAt: true,
+            updatedAt: true,
+            onboardingCompleted: true,
           },
         },
       },
@@ -104,11 +115,8 @@ export const getTaskById = async (
   };
 
   return {
-    task: {
-      ...task,
-      project,
-    },
-    project,
+    task,
     comment,
+    currentUserAccessLevel: isUserMember.accessLevel,
   };
 };

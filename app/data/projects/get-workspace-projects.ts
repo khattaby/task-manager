@@ -31,7 +31,36 @@ export const getWorkspaceProjectByWorkspaceId = async (workspaceId: string) => {
     const [projects, workspaceMembers] = await Promise.all([
       db.project.findMany({
         where: query,
-        select: { name: true, id: true, workspaceId: true, description: true },
+        select: { 
+          name: true, 
+          id: true, 
+          workspaceId: true, 
+          description: true,
+          createdAt: true,
+          updatedAt: true,
+          tasks: {
+            select: {
+              id: true,
+              status: true,
+              dueDate: true,
+            }
+          },
+          projectAccess: {
+            select: {
+              id: true,
+              workspaceMember: {
+                select: {
+                  user: {
+                    select: {
+                      name: true,
+                      email: true,
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
       }),
       db.workspaceMember.findMany({
         where: { workspaceId },
@@ -43,7 +72,11 @@ export const getWorkspaceProjectByWorkspaceId = async (workspaceId: string) => {
       }),
     ]);
 
-    return { projects, workspaceMembers };
+    return { 
+      projects, 
+      workspaceMembers,
+      currentUserAccessLevel: isUserMember.accessLevel,
+    };
   } catch (error) {
     console.log(error);
     return {

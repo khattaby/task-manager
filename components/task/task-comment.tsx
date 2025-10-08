@@ -17,8 +17,9 @@ type CommentWithUser = Comment & {
 interface TaskCommentProp {
   taskId: string;
   comments: CommentWithUser[];
+  currentUserAccessLevel?: string;
 }
-export const TaskComment = ({ taskId, comments }: TaskCommentProp) => {
+export const TaskComment = ({ taskId, comments, currentUserAccessLevel }: TaskCommentProp) => {
   const workspaceId = useWorkspaceId();
   const projectId = useProjectId();
   const router = useRouter();
@@ -29,7 +30,7 @@ export const TaskComment = ({ taskId, comments }: TaskCommentProp) => {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      await postComment(workspaceId! as string, projectId, newComment);
+      await postComment(workspaceId! as string, projectId, newComment, taskId);
       toast.success("Comment posted successfully");
       setNewComment("");
       router.refresh();
@@ -47,22 +48,24 @@ export const TaskComment = ({ taskId, comments }: TaskCommentProp) => {
         <CardTitle>Comment</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="space-y-4">
-          <Textarea
-            placeholder="Add a comment ..."
-            className="min-h-[10px]"
-            value={newComment}
-            onChange={(e) => {
-              setNewComment(e.target.value);
-            }}
-          ></Textarea>
-          <Button
-            disabled={isSubmitting || !newComment.trim()}
-            onClick={handleSubmit}
-          >
-            Post Comment
-          </Button>
-        </div>
+        {currentUserAccessLevel !== "VIEWER" && (
+          <div className="space-y-4">
+            <Textarea
+              placeholder="Add a comment ..."
+              className="min-h-[10px]"
+              value={newComment}
+              onChange={(e) => {
+                setNewComment(e.target.value);
+              }}
+            ></Textarea>
+            <Button
+              disabled={isSubmitting || !newComment.trim()}
+              onClick={handleSubmit}
+            >
+              Post Comment
+            </Button>
+          </div>
+        )}
         <CommentList comments={comments as any} />
       </CardContent>
     </Card>

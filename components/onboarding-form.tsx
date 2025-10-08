@@ -40,11 +40,12 @@ interface Props {
   name: string;
   email: string;
   image?: string;
+  redirectTo?: string;
 }
 
 export type UserDataType = z.infer<typeof userSchema>;
 
-const OnboardingForm = ({ name, email, image }: Props) => {
+const OnboardingForm = ({ name, email, image, redirectTo }: Props) => {
   const [pending, setPending] = useState(false);
   const router = useRouter();
 
@@ -64,7 +65,7 @@ const OnboardingForm = ({ name, email, image }: Props) => {
   const onSubmit = async (data: UserDataType) => {
     try {
       setPending(true);
-      const result = await createUser(data);
+      const result = await createUser(data, redirectTo);
       
       if (result.success) {
         toast.success("Onboarding completed successfully!");

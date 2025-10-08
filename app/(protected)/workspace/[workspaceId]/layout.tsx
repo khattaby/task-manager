@@ -16,17 +16,23 @@ const WorkspaceIdLayout = async ({ children, params }: Props) => {
   const { data } = await getUserWorkspaces();
   const { workspaceId } = await params;
 
-  if (data?.onboardingCompleted && !data?.workspaces) {
+  // ✅ redirect logic refined
+  if (data?.onboardingCompleted && (!data?.workspaces || data.workspaces.length === 0)) {
     redirect("/create-workspace");
   } else if (!data?.onboardingCompleted) {
     redirect("/onboarding");
   }
+
   return (
     <SidebarProvider>
       <div className="w-full flex bg-background h-screen">
+        {/* ✅ sidebar container that reads open/close state from provider */}
         <AppSidebarContainer data={data as any} workspaceId={workspaceId} />
+
+        {/* ✅ main area */}
         <main className="w-full overflow-y-auto min-h-screen">
           <div className="flex items-start">
+            {/* ✅ toggle button connected to provider */}
             <SidebarTrigger className="pt-3" />
             <Navbar
               id={data?.id || ""}
@@ -35,6 +41,7 @@ const WorkspaceIdLayout = async ({ children, params }: Props) => {
               image={data?.image || ""}
             />
           </div>
+
           <div className="p-0 md:p-4 pt-2">{children}</div>
         </main>
       </div>

@@ -52,11 +52,15 @@ export const NavMain = () => {
               <SidebarMenuButton
                 asChild
                 tooltip={el.label}
-                className="px-2 py-1.5"
+                className="cursor-pointer group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:size-10"
               >
-                <Link href={el.href} onClick={() => setOpenMobile(false)}>
-                  <el.icon className="mr-2 h-4 w-4" />
-                  {el.label}
+                <Link 
+                  href={el.href} 
+                  onClick={() => setOpenMobile(false)}
+                  className="group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:h-full"
+                >
+                  <el.icon className="h-4 w-4 cursor-pointer group-data-[collapsible=icon]:mr-0" />
+                  <span className="group-data-[collapsible=icon]:hidden">{el.label}</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>

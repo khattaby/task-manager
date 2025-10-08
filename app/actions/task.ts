@@ -5,6 +5,7 @@ import { userRequired } from "../data/user/is-authenticated";
 import { taskFormSchema } from "@/lib/schema";
 import { db } from "@/lib/db";
 import { TaskStatus } from "@prisma/client";
+import { canModifyContent } from "@/utils/access-control";
 
 export const createNewTask = async (
   data: TaskFormValues,
@@ -26,6 +27,12 @@ export const createNewTask = async (
 
     if (!isUserMember) {
       return { success: false, error: "User is not a member of the workspace" };
+    }
+
+    // Check if user can modify content (MEMBER or OWNER only)
+    const canModify = await canModifyContent(user?.id as string, workspaceId);
+    if (!canModify) {
+      return { success: false, error: "Only members and owners can create tasks" };
     }
 
     const tasks = await db.task.findMany({
@@ -85,6 +92,77 @@ export const createNewTask = async (
   }
 };
 
+export const deleteTask = async (taskId: string, projectId: string, workspaceId: string) => {
+  try {
+    const { user } = await userRequired();
+
+    const isUserMember = await db.workspaceMember.findUnique({
+      where: {
+        userId_workspaceId: {
+          userId: user?.id as string,
+          workspaceId,
+        },
+      },
+    });
+
+    if (!isUserMember) {
+      return { success: false, error: "User is not a member of the workspace" };
+    }
+
+    // Check if user can modify content (MEMBER or OWNER only)
+    const canModify = await canModifyContent(user?.id as string, workspaceId);
+    if (!canModify) {
+      return { success: false, error: "Only members and owners can delete tasks" };
+    }
+
+    const projectAccess = await db.projectAccess.findUnique({
+      where: {
+        workspaceMemberId_projectId: {
+          workspaceMemberId: isUserMember.id,
+          projectId,
+        },
+      },
+    });
+
+    if (!projectAccess?.hasAccess) {
+      return {
+        success: false,
+        error: "User does not have access to the project",
+      };
+    }
+
+    // Get task details before deletion for activity log
+    const task = await db.task.findUnique({
+      where: { id: taskId },
+      select: { title: true },
+    });
+
+    if (!task) {
+      return { success: false, error: "Task not found" };
+    }
+
+    // Delete the task (this will cascade delete attachments and comments)
+    await db.task.delete({
+      where: { id: taskId },
+    });
+
+    // Create activity log
+    await db.activity.create({
+      data: {
+        type: "TASK_DELETED",
+        description: `Deleted task ${task.title}`,
+        projectId: projectId,
+        userId: user?.id as string,
+      },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting task:", error);
+    return { success: false, error: "Failed to delete task" };
+  }
+};
+
 export const updateTaskPosition = async (
   taskId: string,
   newPosition: number,
@@ -128,6 +206,12 @@ export const updateTask = async (
 
     if (!isUserMember) {
       return { success: false, error: "User is not a member of the workspace" };
+    }
+
+    // Check if user can modify content (MEMBER or OWNER only)
+    const canModify = await canModifyContent(user?.id as string, workspaceId);
+    if (!canModify) {
+      return { success: false, error: "Only members and owners can edit tasks" };
     }
 
     const projectAccess = await db.projectAccess.findUnique({

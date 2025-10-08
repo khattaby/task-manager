@@ -11,6 +11,14 @@ export interface CommentProps extends Comment {
 }
 
 export const CommentList = ({ comments }: { comments: CommentProps[] }) => {
+  if (!comments || comments.length === 0) {
+    return (
+      <div className="text-center text-muted-foreground py-4">
+        No comments yet.
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       {comments.map((comment: CommentProps) => (

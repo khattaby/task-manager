@@ -74,7 +74,11 @@ const FormItemContext = React.createContext<FormItemContextValue>(
 )
 
 function FormItem({ className, ...props }: React.ComponentProps<"div">) {
-  const id = React.useId()
+  const [id, setId] = React.useState<string>("")
+  
+  React.useEffect(() => {
+    setId(`form-item-${Math.random().toString(36).substr(2, 9)}`)
+  }, [])
 
   return (
     <FormItemContext.Provider value={{ id }}>

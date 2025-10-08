@@ -1,7 +1,7 @@
 "use client";
 
 import { Project } from "@prisma/client";
-import { ColumnDef } from "@tanstack/react-table";
+import { ColumnDef, Row } from "@tanstack/react-table";
 import { Checkbox } from "../ui/checkbox";
 import { Button } from "../ui/button";
 import { ArrowUpDown, Paperclip, MoreHorizontal } from "lucide-react";
@@ -17,6 +17,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+import { deleteTask } from "@/app/actions/task";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export type TaskTableItem = {
   id: string;
@@ -44,7 +47,8 @@ export type TaskTableItem = {
   };
 };
 
-export const columns: ColumnDef<TaskTableItem>[] = [
+// Function to generate columns based on user access level
+export const getColumns = (currentUserAccessLevel?: string): ColumnDef<TaskTableItem>[] => [
   {
     id: "select",
     header: ({ table }) => (
@@ -57,7 +61,7 @@ export const columns: ColumnDef<TaskTableItem>[] = [
         aria-label="Select all"
       />
     ),
-    cell: ({ row }) => (
+    cell: ({ row }: { row: Row<TaskTableItem> }) => (
       <Checkbox
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
@@ -77,7 +81,7 @@ export const columns: ColumnDef<TaskTableItem>[] = [
         Task Title <ArrowUpDown />
       </Button>
     ),
-    cell: ({ row }) => {
+    cell: ({ row }: { row: Row<TaskTableItem> }) => {
       const title = row.getValue("title");
       return (
         <Link
@@ -103,7 +107,7 @@ export const columns: ColumnDef<TaskTableItem>[] = [
         Status <ArrowUpDown />
       </Button>
     ),
-    cell: ({ row }) => {
+    cell: ({ row }: { row: Row<TaskTableItem> }) => {
       const status = row.getValue("status") as string;
       const getStatusVariant = (status: string) => {
         switch (status.toLowerCase()) {
@@ -152,7 +156,7 @@ export const columns: ColumnDef<TaskTableItem>[] = [
         Priority <ArrowUpDown />
       </Button>
     ),
-    cell: ({ row }) => {
+    cell: ({ row }: { row: Row<TaskTableItem> }) => {
       const priority = row.getValue("priority") as string;
       const getPriorityVariant = (priority: string) => {
         switch (priority.toLowerCase()) {
@@ -201,7 +205,7 @@ export const columns: ColumnDef<TaskTableItem>[] = [
         Created At <ArrowUpDown />
       </Button>
     ),
-    cell: ({ row }) => {
+    cell: ({ row }: { row: Row<TaskTableItem> }) => {
       const createdAt = row.getValue("createdAt") as Date;
       return (
         <div className="text-sm">
@@ -224,7 +228,7 @@ export const columns: ColumnDef<TaskTableItem>[] = [
         Due Date <ArrowUpDown />
       </Button>
     ),
-    cell: ({ row }) => {
+    cell: ({ row }: { row: Row<TaskTableItem> }) => {
       const dueDate = row.getValue("dueDate") as Date;
       const today = new Date();
       const due = new Date(dueDate);
@@ -258,7 +262,7 @@ export const columns: ColumnDef<TaskTableItem>[] = [
         Assigned To <ArrowUpDown />
       </Button>
     ),
-    cell: ({ row }) => {
+    cell: ({ row }: { row: Row<TaskTableItem> }) => {
       const assignedTo = row.getValue("assignedTo") as any;
 
       if (!assignedTo) {
@@ -308,16 +312,14 @@ export const columns: ColumnDef<TaskTableItem>[] = [
         Attachments <ArrowUpDown />
       </Button>
     ),
-    cell: ({ row }) => {
+    cell: ({ row }: { row: Row<TaskTableItem> }) => {
       const attachments = row.getValue("attachments") as any[];
 
       if (!attachments || attachments.length === 0) {
         return (
           <div className="flex items-center gap-2">
             <Paperclip className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">
-              No attachments
-            </span>
+            <span className="text-sm text-muted-foreground">None</span>
           </div>
         );
       }
@@ -326,27 +328,37 @@ export const columns: ColumnDef<TaskTableItem>[] = [
         <div className="flex items-center gap-2">
           <Paperclip className="h-4 w-4" />
           <Badge variant="secondary">
-            {attachments.length} file{attachments.length !== 1 ? "s" : ""}
+            {attachments.length}
           </Badge>
-          {attachments.length > 0 && (
-            <span className="text-xs text-muted-foreground">
-              {attachments[0].name}
-              {attachments.length > 1 && ` +${attachments.length - 1} more`}
-            </span>
-          )}
         </div>
       );
     },
   },
-  {
+  // Conditionally include actions column based on access level
+  ...(currentUserAccessLevel !== "VIEWER" ? [{
     id: "actions",
     header: "Actions",
-    cell: ({ row }) => {
+    cell: ({ row }: { row: Row<TaskTableItem> }) => {
       const task = row.original;
 
-      const handleDelete = () => {
-        // TODO: Implement delete logic
-        console.log(`Deleting task ${task.id}`);
+      const handleDelete = async () => {
+        if (!confirm(`Are you sure you want to delete the task "${task.title}"? This action cannot be undone.`)) {
+          return;
+        }
+
+        try {
+          const result = await deleteTask(task.id, task.Project.id, task.Project.workspaceId);
+          if (result.success) {
+            toast.success("Task deleted successfully");
+            // Refresh the page to update the task list
+            window.location.reload();
+          } else {
+            toast.error(result.error || "Failed to delete task");
+          }
+        } catch (error) {
+          console.error("Error deleting task:", error);
+          toast.error("An unexpected error occurred");
+        }
       };
 
       return (
@@ -358,11 +370,12 @@ export const columns: ColumnDef<TaskTableItem>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => console.log(`Showing task ${task.id}`)}
-            >
-              Show Task
+            <DropdownMenuItem asChild>
+              <Link
+                href={`/workspace/${task.Project.workspaceId}/projects/${task.Project.id}/${task.id}`}
+              >
+                Show Task
+              </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -377,8 +390,11 @@ export const columns: ColumnDef<TaskTableItem>[] = [
     },
     enableSorting: false,
     enableHiding: false,
-  },
+  }] : [])
 ];
+
+// Keep the original columns export for backward compatibility
+export const columns: ColumnDef<TaskTableItem>[] = getColumns();
 
 export const myTaskColumns: ColumnDef<TaskTableItem>[] = [
   {
@@ -393,7 +409,7 @@ export const myTaskColumns: ColumnDef<TaskTableItem>[] = [
         aria-label="Select all"
       />
     ),
-    cell: ({ row }) => (
+    cell: ({ row }: { row: Row<TaskTableItem> }) => (
       <Checkbox
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
@@ -413,7 +429,7 @@ export const myTaskColumns: ColumnDef<TaskTableItem>[] = [
         My Task <ArrowUpDown />
       </Button>
     ),
-    cell: ({ row }) => {
+    cell: ({ row }: { row: Row<TaskTableItem> }) => {
       const title = row.getValue("title");
       return (
         <Link
@@ -444,7 +460,7 @@ export const myTaskColumns: ColumnDef<TaskTableItem>[] = [
         Status <ArrowUpDown />
       </Button>
     ),
-    cell: ({ row }) => {
+    cell: ({ row }: { row: Row<TaskTableItem> }) => {
       const status = row.getValue("status") as string;
       return (
         <Badge variant={status as any}>
@@ -463,7 +479,7 @@ export const myTaskColumns: ColumnDef<TaskTableItem>[] = [
         Priority <ArrowUpDown />
       </Button>
     ),
-    cell: ({ row }) => {
+    cell: ({ row }: { row: Row<TaskTableItem> }) => {
       const priority = row.getValue("priority") as string;
       const getPriorityVariant = (priority: string) => {
         switch (priority.toLowerCase()) {
@@ -512,7 +528,7 @@ export const myTaskColumns: ColumnDef<TaskTableItem>[] = [
         Due Date <ArrowUpDown />
       </Button>
     ),
-    cell: ({ row }) => {
+    cell: ({ row }: { row: Row<TaskTableItem> }) => {
       const dueDate = row.getValue("dueDate") as Date;
       const today = new Date();
       const due = new Date(dueDate);
@@ -546,7 +562,7 @@ export const myTaskColumns: ColumnDef<TaskTableItem>[] = [
         Files <ArrowUpDown />
       </Button>
     ),
-    cell: ({ row }) => {
+    cell: ({ row }: { row: Row<TaskTableItem> }) => {
       const attachments = row.getValue("attachments") as any[];
 
       if (!attachments || attachments.length === 0) {
@@ -571,7 +587,7 @@ export const myTaskColumns: ColumnDef<TaskTableItem>[] = [
   {
     id: "actions",
     header: "Actions",
-    cell: ({ row }) => {
+    cell: ({ row }: { row: Row<TaskTableItem> }) => {
       const task = row.original;
 
       return (
@@ -583,7 +599,6 @@ export const myTaskColumns: ColumnDef<TaskTableItem>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem asChild>
               <Link
                 href={`/workspace/${task.Project.workspaceId}/projects/${task.Project.id}/${task.id}`}

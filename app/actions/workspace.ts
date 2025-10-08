@@ -255,6 +255,99 @@ export const regenerateInviteCode = async (workspaceId: string) => {
   }
 };
 
+export const updateMemberAccessLevel = async (
+  workspaceId: string,
+  memberId: string,
+  newAccessLevel: "OWNER" | "MEMBER" | "VIEWER"
+) => {
+  try {
+    const { user } = await userRequired();
+
+    if (!user?.id) {
+      return {
+        success: false,
+        message: "User ID is required",
+      };
+    }
+
+    // Check if the current user is a member of the workspace
+    const currentUserMember = await db.workspaceMember.findUnique({
+      where: {
+        userId_workspaceId: {
+          userId: user.id,
+          workspaceId,
+        },
+      },
+    });
+
+    if (!currentUserMember) {
+      return {
+        success: false,
+        message: "You are not a member of this workspace",
+      };
+    }
+
+    // Check if user has permission to update member access levels (only OWNER)
+    if (currentUserMember.accessLevel !== "OWNER") {
+      return {
+        success: false,
+        message: "Only workspace owners can change member access levels",
+      };
+    }
+
+    // Get the member to be updated
+    const memberToUpdate = await db.workspaceMember.findUnique({
+      where: {
+        id: memberId,
+      },
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    if (!memberToUpdate) {
+      return {
+        success: false,
+        message: "Member not found",
+      };
+    }
+
+    // Prevent owner from changing their own access level
+    if (memberToUpdate.userId === user.id) {
+      return {
+        success: false,
+        message: "You cannot change your own access level",
+      };
+    }
+
+    // Update the member's access level
+    await db.workspaceMember.update({
+      where: {
+        id: memberId,
+      },
+      data: {
+        accessLevel: newAccessLevel,
+      },
+    });
+
+    return {
+      success: true,
+      message: `Successfully updated ${memberToUpdate.user.name || memberToUpdate.user.email}'s access level to ${newAccessLevel}`,
+    };
+  } catch (error) {
+    console.log("Error updating member access level:", error);
+    return {
+      success: false,
+      message: "Failed to update member access level",
+    };
+  }
+};
+
 export const deleteWorkspace = async (workspaceId: string) => {
   try {
     const { user } = await userRequired();

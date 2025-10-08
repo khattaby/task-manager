@@ -19,7 +19,7 @@ const ProjectPage = async (props: ProjectPageProps) => {
   const { workspaceId, projectId } = await props.params;
   const searchParams = await props.searchParams;
 
-  const { project, tasks, activities, comments, totalWorkspaceMembers } =
+  const { project, tasks, activities, comments, totalWorkspaceMembers, currentUserAccessLevel } =
     await getProjectDetails(workspaceId, projectId);
 
   return (
@@ -61,16 +61,17 @@ const ProjectPage = async (props: ProjectPageProps) => {
             activities={activities as any}
             totalWorkspaceMembers={totalWorkspaceMembers || 0}
             comments={comments as any}
+            currentUserAccessLevel={currentUserAccessLevel}
           />
         </TabsContent>
         <TabsContent value="table">
           <div>
-            <ProjectTableContainer projectId={projectId} />
+            <ProjectTableContainer projectId={projectId} currentUserAccessLevel={currentUserAccessLevel} />
           </div>
         </TabsContent>
         <TabsContent value="kanban">
           <div className="flex flex-col gap-6 px-2 md:px-4 2xl:px-6 py-0">
-            <ProjectHeader project={project as any} />
+            <ProjectHeader project={project as any} currentUserAccessLevel={currentUserAccessLevel} />
             <ProjectKanban initialTasks={tasks?.items} />
           </div>
         </TabsContent>

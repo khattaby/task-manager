@@ -20,11 +20,13 @@ export const AppSidebar = ({
   projects,
   workspaceMembers,
   user,
+  currentUserAccessLevel,
 }: {
   data: AppSidebarDataProps;
   projects: ProjectProps[];
   workspaceMembers: workspaceMembersProps[];
   user: User;
+  currentUserAccessLevel?: string;
 }) => {
   return (
     <>
@@ -38,11 +40,15 @@ export const AppSidebar = ({
               <span className="text-xl font-bold">DailyTM</span>
             </SidebarGroupLabel>
           </div>
-          <div className="flex justify-between mb-0">
-            <SidebarGroupLabel className="mb-2 text-sm font-semibold text-muted-foreground uppercase">
+          <div className="flex justify-between items-center mb-0">
+            <SidebarGroupLabel className="mb-2 text-sm font-semibold text-muted-foreground uppercase group-data-[state=collapsed]:hidden">
               Workspace
             </SidebarGroupLabel>
-            <Button asChild size={"icon"} className="size-5">
+            <Button
+              asChild
+              size={"icon"}
+              className="size-5 group-data-[state=collapsed]:hidden"
+            >
               <Link href="/create-workspace">
                 <Plus />
               </Link>
@@ -52,7 +58,11 @@ export const AppSidebar = ({
         </SidebarHeader>
         <SidebarContent>
           <NavMain />
-          <NavProjects projects={projects} workspaceMembers={workspaceMembers} />
+          <NavProjects 
+            projects={projects} 
+            workspaceMembers={workspaceMembers} 
+            currentUserAccessLevel={currentUserAccessLevel}
+          />
         </SidebarContent>
       </Sidebar>
     </>
